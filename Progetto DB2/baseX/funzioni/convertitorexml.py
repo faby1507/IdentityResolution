@@ -59,4 +59,5 @@ indent(root)
 tree = ET.ElementTree(root)
 tree.write("dataset_25.xml", encoding="utf-8", xml_declaration=True)
 
-print("✅ File XML generato correttamente: dataset_100.xml")
+# Messaggio di conferma coerente con il nome del file salvato
+print("✅ File XML generato correttamente: dataset_25.xml")

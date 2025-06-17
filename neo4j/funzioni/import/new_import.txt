@@ -1,0 +1,50 @@
+CREATE CONSTRAINT IF NOT EXISTS FOR (p:Persona) REQUIRE p.ID_Locale IS UNIQUE;
+CREATE CONSTRAINT IF NOT EXISTS FOR (d:Documento) REQUIRE d.ID_Documento IS UNIQUE;
+CREATE CONSTRAINT IF NOT EXISTS FOR (f:Fonte) REQUIRE f.ID_Fonte IS UNIQUE;
+// Persone
+LOAD CSV WITH HEADERS FROM 'file:///persone_50.csv' AS row
+MERGE (p:Persona {ID_Locale: toInteger(row.ID_Locale)})
+ON CREATE SET
+  p.Nome = row.Nome,
+  p.Cognome = row.Cognome,
+  p.NomeProfessione = row.NomeProfessione,
+  p.Settore = row.Settore,
+  p.ID_Documento = toInteger(row.ID_Documento),
+  p.ID_Fonte = toInteger(row.ID_Fonte);
+
+// Documenti
+LOAD CSV WITH HEADERS FROM 'file:///documenti_50.csv' AS row
+MERGE (d:Documento {ID_Documento: toInteger(row.ID_Documento)})
+ON CREATE SET
+  d.Via = row.Via,
+  d.Citta = row.Citta,
+  d.CAP = row.CAP,
+  d.Nazione = row.Nazione,
+  d.Scadenza = row.Scadenza;
+
+// Fonti
+LOAD CSV WITH HEADERS FROM 'file:///fonti_50.csv' AS row
+MERGE (f:Fonte {ID_Fonte: toInteger(row.ID_Fonte)})
+ON CREATE SET
+  f.Affidabilita = toFloat(row.Affidabilita),
+  f.Nazione = row.Nazione,
+  f.NomeFonte = row.NomeFonte;
+
+
+LOAD CSV WITH HEADERS FROM 'file:///persone_50.csv' AS row
+MATCH (p:Persona {ID_Locale: toInteger(row.ID_Locale)})
+MATCH (d:Documento {ID_Documento: toInteger(row.ID_Documento)})
+MERGE (p)-[:HA_DOCUMENTO]->(d);
+
+
+LOAD CSV WITH HEADERS FROM 'file:///persone_50.csv' AS row
+MATCH (p:Persona {ID_Locale: toInteger(row.ID_Locale)})
+MATCH (f:Fonte {ID_Fonte: toInteger(row.ID_Fonte)})
+WHERE NOT (f)<-[:HA_FONTE]-(:Persona)
+MERGE (p)-[:HA_FONTE]->(f);
+
+
+LOAD CSV WITH HEADERS FROM 'file:///documenti_50.csv' AS row
+MATCH (d:Documento {ID_Documento: toInteger(row.ID_Documento)})
+MATCH (f:Fonte {ID_Fonte: toInteger(row.ID_Fonte)})
+MERGE (d)-[:DERIVA_DA]->(f);
